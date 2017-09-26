@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xalan="http://xml.apache.org/xalan" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creator="MotionX Live" version="1.1">
+  <trk>
+    <name>TEST SET</name>
+    <desc>2017. 9. 26.  7:00 am</desc>
+    <trkseg>
+      <trkpt lat="35.8869094849" lon="128.611282349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8869094849" lon="128.611382349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8869094849" lon="128.611482349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8869094849" lon="128.611582349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8869094849" lon="128.611682349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8869094849" lon="128.611782349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8870094849" lon="128.611282349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8870094849" lon="128.611382349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8870094849" lon="128.611482349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8870094849" lon="128.611582349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8870094849" lon="128.611682349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8870094849" lon="128.611782349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8871094849" lon="128.611282349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8871094849" lon="128.611382349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8871094849" lon="128.611482349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8871094849" lon="128.611582349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8871094849" lon="128.611682349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8871094849" lon="128.611782349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8872094849" lon="128.611282349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8872094849" lon="128.611382349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8872094849" lon="128.611482349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8872094849" lon="128.611582349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8872094849" lon="128.611682349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.8872094849" lon="128.611782349">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

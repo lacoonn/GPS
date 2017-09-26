@@ -1,6 +1,8 @@
 ﻿  CreatingMap.cpp
 c:\users\woochan\dropbox\gps\creatingmap\creatingmap.cpp : warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+c:\users\woochan\dropbox\gps\creatingmap\creatingmap.cpp(14): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
 c:\users\woochan\dropbox\gps\creatingmap\creatingmap.cpp(15): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
-c:\users\woochan\dropbox\gps\creatingmap\creatingmap.cpp(16): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+c:\users\woochan\dropbox\gps\creatingmap\creatingmap.cpp(44): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+c:\users\woochan\dropbox\gps\creatingmap\creatingmap.cpp(45): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
   CreatingMap.vcxproj -> C:\Users\woochan\Dropbox\GPS\Debug\CreatingMap.exe
   CreatingMap.vcxproj -> C:\Users\woochan\Dropbox\GPS\Debug\CreatingMap.pdb (Partial PDB)

@@ -367,7 +367,7 @@ void GPS2GPX()
 
 
 	for(int i = 0; i < ITR; i++) {
-		fs_out.precision(12);
+		fs_out.precision(9);
 		fs_out << "      <trkpt lat=\"" << pointList[i].latitude << "\" lon=\"" << pointList[i].longitude << "\">" << endl;
 		fs_out << "        <ele></ele>" << endl;
 		fs_out << "        <time></time>" << endl;

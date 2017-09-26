@@ -53,9 +53,9 @@ std::priority_queue<Item, std::vector<Item>, std::greater<Item>> pq;
 int row, col;
 
 void initMap();
-Vertex *getNearest(Vertex point);
+void getNearest(Vertex point, Cdt &tgt1, Cdt &tgt2);
 double getDistance(Vertex point1, Vertex point2);
-void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt);
+void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2);
 double deg2rad(double deg);
 double rad2deg(double rad);
 
@@ -63,14 +63,22 @@ int main()
 {
 	fin.open("map.txt");
 	initMap(); // 그래프를 초기화한다.
-	Vertex destination;
-	fin >> destination.latitude >> destination.longitude;
-	Vertex *target = getNearest(destination); // 주차지점을 입력받고 거기서 가장 가까운 vertex를 찾는다.
-	// 시작지점에서 어디 순으로 갈지 정한다.
+	Vertex *destination = new Vertex();
+	fin >> destination->latitude >> destination->longitude;
 	Cdt src = { 0, 0 };
-	Cdt tgt = { target->row, target->col };
-	ShortestPath(corners, src, tgt); // 각 지점 간의 최단경로를 구한다.
+	Cdt tgt1, tgt2;
+	getNearest(*destination, tgt1, tgt2); // 주차지점을 입력받고 거기서 가장 가까운 vertex를 찾는다.
+	corners[tgt1.row][tgt1.col].destination = destination; // tgt들의 destination변수에 destination vertex의 주소를 링크한다.
+	corners[tgt2.row][tgt2.col].destination = destination;
+	// 시작지점에서 어디 순으로 갈지 정한다.
+	std::cout << "tgt1 : " << tgt1.row << " " << tgt1.col << std::endl;
+	std::cout << "tgt2 : " << tgt2.row << " " << tgt2.col << std::endl;
+	ShortestPath(corners, src, tgt1, tgt2); // 각 지점 간의 최단경로를 구한다.
 	// 입력된 최단경로를 출력한다.
+
+
+	// 동적할당 해제
+	delete(destination);
 
     return 0;
 }
@@ -89,38 +97,32 @@ void initMap()
 			corners[i][j].col = j;
 		}
 	}
-	std::cout << "check" << std::endl;
 }
 
-Vertex *getNearest(Vertex point) // 한 점이 주어지면 그래프에서 가장 그 점에 가까운 vertex를 반환한다
+void getNearest(Vertex point, Cdt &tgt1, Cdt &tgt2) // 한 점이 주어지면 그래프에서 가장 그 점에 가까운 두 개의 vertex를 반환한다
 {
-	Vertex *tempVertex = NULL;
+	std::priority_queue<Item, std::vector<Item>, std::greater<Item>> tempPQ; // Item의 second가 작은 순으로 정렬하는 pq
 	double minDis = -1;
 
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
-			if (minDis < 0) {
-				minDis = getDistance(point, corners[i][j]);
-				tempVertex = &corners[i][j];
-			}
-			else {
-				double tempDis = getDistance(point, corners[i][j]);
-				if (tempDis < minDis) {
-					minDis = tempDis;
-					tempVertex = &corners[i][j];
-				}
-			}
+			minDis = getDistance(point, corners[i][j]);
+			Item tempItem(corners[i][j], minDis);
+			tempPQ.push(tempItem);
 		}
 	}
-
-	return tempVertex;
+	Vertex tempVer; // second가 작은 순으로 두 점을 얻는다.
+	tempVer = tempPQ.top().first;
+	tempPQ.pop();
+	tgt1 = { tempVer.row, tempVer.col };
+	tempVer = tempPQ.top().first;
+	tempPQ.pop();
+	tgt2 = { tempVer.row, tempVer.col };
 }
 
 double getDistance(Vertex point1, Vertex point2)
 {
 	// 두 점(위도, 경도) 사이의 거리를 구한다
-	//float theta = point1.longitude - point2.longitude;
-	//double dist = sin(deg2rad(point1.latitude)) * sin(deg2rad(point2.latitude)) + cos(deg2rad(point1.latitude)) * cos(deg2rad(point2.latitude)) * cos(deg2rad(theta));
 	double lat1 = (double)point1.latitude;
 	double lon1 = (double)point1.longitude;
 	double lat2 = (double)point2.latitude;
@@ -152,10 +154,11 @@ double rad2deg(double rad) {
 	return (rad * 180 / PI);
 }
 
-void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt) // Dijkstra 알고리즘을 사용해서 두 점 사이의 최단거리를 구한다.
+void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2) // Dijkstra 알고리즘을 사용해서 두 목적지 중 가까운 곳의 최단경로를 구한다.
 {
 	int dist[20][20];
 	Cdt prev[20][20];
+	Cdt ftgt; // 두 목적지 중 어디로 갔는지 저장하는 변수ㄴ
 
 	dist[src.row][src.col] = 0;
 	for (int i = 0; i < row; i++) {
@@ -177,8 +180,14 @@ void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt) // Dijkstra 알고리즘
 		int uRow = u.row;
 		int uCol = u.col;
 
-		if (uRow == tgt.row && uCol == tgt.col)
+		if (uRow == tgt1.row && uCol == tgt1.col) {
+			ftgt = tgt1;// 어디로 갔는지 표시하는 코드 추가
 			break;
+		}
+		if (uRow == tgt2.row && uCol == tgt2.col) {
+			ftgt = tgt2;// 어디로 갔는지 표시하는 코드 추가
+			break;
+		}
 
 		if (uRow > 0) { // up
 			Vertex v = corners[uRow - 1][uCol];
@@ -238,7 +247,7 @@ void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt) // Dijkstra 알고리즘
 	6  insert u at the beginning of S             // Push the source onto the stack
 	*/
 	std::vector<Cdt> S;
-	Cdt u = tgt;
+	Cdt u = ftgt;
 	while (prev[u.row][u.col].row != -1 && prev[u.row][u.col].col != -1) {
 		S.push_back(u);
 		u = { prev[u.row][u.col].row, prev[u.row][u.col].col };
@@ -251,4 +260,5 @@ void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt) // Dijkstra 알고리즘
 		S.pop_back();
 		std::cout << temp.row << " " << temp.col << std::endl;
 	}
+	std::cout << "\n\n\n";
 }
