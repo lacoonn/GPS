@@ -1,7 +1,0 @@
-﻿  GetSerial.cpp
-GetSerial.cpp(54): warning C4101: 'SerialBuffer' :참조되지 않은 지역 변수입니다.
-  코드를 생성하고 있습니다.
-  All 5 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  코드를 생성했습니다.
-  GetSerial.vcxproj -> C:\Users\woochan\Documents\GPS\Release\GetSerial.exe
-  GetSerial.vcxproj -> C:\Users\woochan\Documents\GPS\Release\GetSerial.pdb (Full PDB)

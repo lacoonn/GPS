@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include <iostream>
 #include <fstream>
+#include <climits>
 
 using namespace std;
 
@@ -57,6 +58,10 @@ int main()
 	// gps는 소숫점 4번째 자리부터 유의미한 차이가 보임
 	GPS2GPX(row + 1, col + 1);
 
+	double tempDouble = DBL_MAX;
+	printf("%lf\n", tempDouble);
+	int tempInt = INT_MAX;
+	printf("%d\n", tempInt);
     return 0;
 }
 

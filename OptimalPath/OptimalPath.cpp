@@ -47,38 +47,60 @@ bool operator < (Item a, Item b) {
 
 std::ifstream fin;
 Vertex corners[20][20];
-std::priority_queue<Item, std::vector<Item>, std::greater<Item>> pq;
+//std::priority_queue<Item, std::vector<Item>, std::greater<Item>> pq;
 
 
 int row, col;
 
 void initMap();
-void getNearest(Vertex point, Cdt &tgt1, Cdt &tgt2);
+Vertex *getNearestPointFromDesList(Cdt source, std::vector<Vertex *> &desList);
+void getNearestTwoPoint(Vertex point, Cdt &tgt1, Cdt &tgt2);
 double getDistance(Vertex point1, Vertex point2);
-void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2);
+Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2);
 double deg2rad(double deg);
 double rad2deg(double rad);
 
 int main()
 {
-	fin.open("map.txt");
+	fin.open("map.txt"); // 현재 목적지들에 가장 가까운 점은 (0, 5), (3, 0), (3, 5) 이다.
+	
 	initMap(); // 그래프를 초기화한다.
-	Vertex *destination = new Vertex();
-	fin >> destination->latitude >> destination->longitude;
-	Cdt src = { 0, 0 };
-	Cdt tgt1, tgt2;
-	getNearest(*destination, tgt1, tgt2); // 주차지점을 입력받고 거기서 가장 가까운 vertex를 찾는다.
-	corners[tgt1.row][tgt1.col].destination = destination; // tgt들의 destination변수에 destination vertex의 주소를 링크한다.
-	corners[tgt2.row][tgt2.col].destination = destination;
-	// 시작지점에서 어디 순으로 갈지 정한다.
-	std::cout << "tgt1 : " << tgt1.row << " " << tgt1.col << std::endl;
-	std::cout << "tgt2 : " << tgt2.row << " " << tgt2.col << std::endl;
-	ShortestPath(corners, src, tgt1, tgt2); // 각 지점 간의 최단경로를 구한다.
-	// 입력된 최단경로를 출력한다.
+	
+	int desNum; // 목적지들을 입력받고 vector에 저장한다.
+	fin >> desNum;
+	std::vector<Vertex *> desList;
+	std::vector<Vertex *> desListForDelete;
+	for (int i = 0; i < desNum; i++) {
+		Vertex *destination = new Vertex();
+		fin >> destination->latitude >> destination->longitude;
+		desList.push_back(destination);
+		desListForDelete.push_back(destination);
+	}
+	
+	Cdt src = { 0, 0 }; // 일단 시작점은 (0, 0)으로 가정한다.
 
+	for (int i = 0; i < desNum; i++) {
+		Vertex *destination = getNearestPointFromDesList(src, desList); // 현재 위치에서 어떤 주차지점으로 먼저 갈지 정한다.
+		
+		Cdt tgt1, tgt2;
+		getNearestTwoPoint(*destination, tgt1, tgt2); // 주차지점을 통해 거기서 가장 가까운 corner 두 개를 찾는다.
+		corners[tgt1.row][tgt1.col].destination = destination; // target corner들의 destination변수에 destination vertex의 주소를 링크한다.
+		corners[tgt2.row][tgt2.col].destination = destination;
+		
+		std::cout << "tgt1 : " << tgt1.row << " " << tgt1.col << std::endl;
+		std::cout << "tgt2 : " << tgt2.row << " " << tgt2.col << std::endl;
+		Cdt tempSrc = ShortestPath(corners, src, tgt1, tgt2); // 각 지점 간의 최단경로를 구한다.
+
+		src = tempSrc; // 출발점을 업데이트한다.
+		// 입력된 최단경로를 출력한다.(현재 ShortestPath 함수 안에 구현)
+	}
 
 	// 동적할당 해제
-	delete(destination);
+	while (!desListForDelete.empty()) {
+		Vertex *tempDes = desListForDelete.back();
+		desListForDelete.pop_back();
+		delete(tempDes);
+	}
 
     return 0;
 }
@@ -99,10 +121,46 @@ void initMap()
 	}
 }
 
-void getNearest(Vertex point, Cdt &tgt1, Cdt &tgt2) // 한 점이 주어지면 그래프에서 가장 그 점에 가까운 두 개의 vertex를 반환한다
+Vertex *getNearestPointFromDesList(Cdt source, std::vector<Vertex *> &desList) // 한 점이 주어지면 desList에서 그 점에 가장 가까운 목적지를 구한다.
+{
+	Vertex *tempVertex = NULL;
+	double minDis = DBL_MAX;
+	int minIndex;
+	int desSize = desList.size();
+	
+	for (int i = 0; i < desSize; i++) {
+		double tempDis = getDistance(corners[source.row][source.col], *(desList.at(i)));
+		if (minDis > tempDis) {
+			minDis = tempDis;
+			minIndex = i;
+			tempVertex = desList.at(i);
+		}
+	}
+	desList.erase(desList.begin() + minIndex);
+
+	return tempVertex;
+
+	/*for(int i = 0; i < desSize; i++) {
+	if (minDis < 0) { // 첫번째 루프일 때
+	minDis = getDistance(corners[source.row][source.col], *(desList.at(i)));
+	minIndex = i;
+	tempVertex = desList.at(i);
+	}
+	else {
+	double tempDis = getDistance(corners[source.row][source.col], *(desList.at(i)));
+	if (minDis > tempDis) {
+	minDis = tempDis;
+	minIndex = i;
+	tempVertex = desList.at(i);
+	}
+	}
+	}*/
+}
+
+void getNearestTwoPoint(Vertex point, Cdt &tgt1, Cdt &tgt2) // 한 점이 주어지면 그래프에서 가장 그 점에 가까운 두 개의 vertex를 반환한다
 {
 	std::priority_queue<Item, std::vector<Item>, std::greater<Item>> tempPQ; // Item의 second가 작은 순으로 정렬하는 pq
-	double minDis = -1;
+	double minDis = -1.0;
 
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < col; j++) {
@@ -154,11 +212,12 @@ double rad2deg(double rad) {
 	return (rad * 180 / PI);
 }
 
-void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2) // Dijkstra 알고리즘을 사용해서 두 목적지 중 가까운 곳의 최단경로를 구한다.
+Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2) // Dijkstra 알고리즘을 사용해서 두 목적지 중 가까운 곳의 최단경로를 구한다.
 {
+	std::priority_queue<Item, std::vector<Item>, std::greater<Item>> pq;
 	int dist[20][20];
 	Cdt prev[20][20];
-	Cdt ftgt; // 두 목적지 중 어디로 갔는지 저장하는 변수ㄴ
+	Cdt ftgt; // 두 목적지 중 어디로 갔는지 저장하는 변수
 
 	dist[src.row][src.col] = 0;
 	for (int i = 0; i < row; i++) {
@@ -261,4 +320,6 @@ void ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2) // Dijkstra �
 		std::cout << temp.row << " " << temp.col << std::endl;
 	}
 	std::cout << "\n\n\n";
+
+	return ftgt;
 }
