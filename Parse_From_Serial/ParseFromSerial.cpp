@@ -8,8 +8,9 @@
 #include <iostream>
 #include <fstream>
 
-#define ITR 100
+#define ITR 30
 #define GPXNAME "5E_outside"
+#define PORTNUM L"COM8"
 
 class Point
 {
@@ -43,7 +44,7 @@ Point pointList[1000];
 int main()
 {
 	HANDLE hComm;
-	wchar_t str[1000] = L"COM7";
+	wchar_t str[1000] = PORTNUM;
 	
 	fs_out.open("gps_log.gpx");
 
@@ -316,7 +317,7 @@ void Ublox::read_gga()
 		counter++;
 	}
 	//cout << latitude << " " << longitude << endl;
-	printf("%d : %f %f\n", gcnt, latitude, longitude);
+	printf("%3d : %f %f\n", gcnt, latitude, longitude);
 	//fs_out.precision(12);
 	//fs_out << latitude << " " << longitude << endl;
 	

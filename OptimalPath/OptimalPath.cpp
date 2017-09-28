@@ -26,17 +26,25 @@ public:
 	float latitude; // 위도
 	float longitude; // 경도
 	Vertex *destination;
+	bool impossible;
 	
 	Vertex()
 	{
+		row = -1;
+		col = -1;
 		latitude = 0;
 		longitude = 0;
 		destination = NULL;
+		impossible = false;
 	}
 
 	void setLocation(float lat, float lon) {
 		latitude = lat;
 		longitude = lon;
+	}
+
+	bool isImpossible() {
+		return impossible;
 	}
 };
 
@@ -54,9 +62,9 @@ int row, col;
 
 void initMap();
 Vertex *getNearestPointFromDesList(Cdt source, std::vector<Vertex *> &desList);
-void getNearestTwoPoint(Vertex point, Cdt &tgt1, Cdt &tgt2);
+void getNearestTwoPoint(Vertex point, Cdt &target1, Cdt &target2);
 double getDistance(Vertex point1, Vertex point2);
-Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2);
+Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt target1, Cdt target2);
 double deg2rad(double deg);
 double rad2deg(double rad);
 
@@ -82,14 +90,14 @@ int main()
 	for (int i = 0; i < desNum; i++) {
 		Vertex *destination = getNearestPointFromDesList(src, desList); // 현재 위치에서 어떤 주차지점으로 먼저 갈지 정한다.
 		
-		Cdt tgt1, tgt2;
-		getNearestTwoPoint(*destination, tgt1, tgt2); // 주차지점을 통해 거기서 가장 가까운 corner 두 개를 찾는다.
-		corners[tgt1.row][tgt1.col].destination = destination; // target corner들의 destination변수에 destination vertex의 주소를 링크한다.
-		corners[tgt2.row][tgt2.col].destination = destination;
+		Cdt target1, target2;
+		getNearestTwoPoint(*destination, target1, target2); // 주차지점을 통해 거기서 가장 가까운 corner 두 개를 찾는다.
+		corners[target1.row][target1.col].destination = destination; // target corner들의 destination변수에 destination vertex의 주소를 링크한다.
+		corners[target2.row][target2.col].destination = destination;
 		
-		std::cout << "tgt1 : " << tgt1.row << " " << tgt1.col << std::endl;
-		std::cout << "tgt2 : " << tgt2.row << " " << tgt2.col << std::endl;
-		Cdt tempSrc = ShortestPath(corners, src, tgt1, tgt2); // 각 지점 간의 최단경로를 구한다.
+		std::cout << "target1 : " << target1.row << " " << target1.col << std::endl;
+		std::cout << "target2 : " << target2.row << " " << target2.col << std::endl;
+		Cdt tempSrc = ShortestPath(corners, src, target1, target2); // 각 지점 간의 최단경로를 구한다.
 
 		src = tempSrc; // 출발점을 업데이트한다.
 		// 입력된 최단경로를 출력한다.(현재 ShortestPath 함수 안에 구현)
@@ -157,7 +165,7 @@ Vertex *getNearestPointFromDesList(Cdt source, std::vector<Vertex *> &desList) /
 	}*/
 }
 
-void getNearestTwoPoint(Vertex point, Cdt &tgt1, Cdt &tgt2) // 한 점이 주어지면 그래프에서 가장 그 점에 가까운 두 개의 vertex를 반환한다
+void getNearestTwoPoint(Vertex point, Cdt &target1, Cdt &target2) // 한 점이 주어지면 그래프에서 가장 그 점에 가까운 두 개의 vertex를 반환한다
 {
 	std::priority_queue<Item, std::vector<Item>, std::greater<Item>> tempPQ; // Item의 second가 작은 순으로 정렬하는 pq
 	double minDis = -1.0;
@@ -172,10 +180,10 @@ void getNearestTwoPoint(Vertex point, Cdt &tgt1, Cdt &tgt2) // 한 점이 주어
 	Vertex tempVer; // second가 작은 순으로 두 점을 얻는다.
 	tempVer = tempPQ.top().first;
 	tempPQ.pop();
-	tgt1 = { tempVer.row, tempVer.col };
+	target1 = { tempVer.row, tempVer.col };
 	tempVer = tempPQ.top().first;
 	tempPQ.pop();
-	tgt2 = { tempVer.row, tempVer.col };
+	target2 = { tempVer.row, tempVer.col };
 }
 
 double getDistance(Vertex point1, Vertex point2)
@@ -212,12 +220,13 @@ double rad2deg(double rad) {
 	return (rad * 180 / PI);
 }
 
-Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2) // Dijkstra 알고리즘을 사용해서 두 목적지 중 가까운 곳의 최단경로를 구한다.
+Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt target1, Cdt target2) // Dijkstra 알고리즘을 사용해서 두 목적지 중 가까운 곳의 최단경로를 구한다.
 {
 	std::priority_queue<Item, std::vector<Item>, std::greater<Item>> pq;
 	int dist[20][20];
 	Cdt prev[20][20];
-	Cdt ftgt; // 두 목적지 중 어디로 갔는지 저장하는 변수
+	Cdt finalTarget; // 주차지점으로 향하기 위해 들러야 하는 마지막 corner
+	Cdt nextSource; // 두 타겟지역 중 하나는 다음 경로를 위한 시작점이 된다.(주차지점이 두 타겟 사이에 있기 때문에)
 
 	dist[src.row][src.col] = 0;
 	for (int i = 0; i < row; i++) {
@@ -239,61 +248,81 @@ Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2) // Dijkstra �
 		int uRow = u.row;
 		int uCol = u.col;
 
-		if (uRow == tgt1.row && uCol == tgt1.col) {
-			ftgt = tgt1;// 어디로 갔는지 표시하는 코드 추가
+		if (uRow == target1.row && uCol == target1.col) {
+			finalTarget = target1;// 어디로 갔는지 표시하는 코드 추가
+			corners[finalTarget.row][finalTarget.col].impossible = true; // finalTarget은 목표지에 도달한 후 곧바로 돌아갈 수는 없는 노드이다.
+			nextSource = target2;
 			break;
 		}
-		if (uRow == tgt2.row && uCol == tgt2.col) {
-			ftgt = tgt2;// 어디로 갔는지 표시하는 코드 추가
+		if (uRow == target2.row && uCol == target2.col) {
+			finalTarget = target2;// 어디로 갔는지 표시하는 코드 추가
+			corners[finalTarget.row][finalTarget.col].impossible = true; // finalTarget은 목표지에 도달한 후 곧바로 돌아갈 수는 없는 노드이다.
+			nextSource = target1;
 			break;
 		}
 
 		if (uRow > 0) { // up
 			Vertex v = corners[uRow - 1][uCol];
+			if (v.isImpossible()) {
+				v.impossible = false;
+			}
+			else {
+				int tempDist = dist[uRow][uCol] + 1;
 
-			int tempDist = dist[uRow][uCol] + 1;
-
-			if (tempDist < dist[v.row][v.col]) {
-				dist[v.row][v.col] = tempDist;
-				prev[v.row][v.col] = { u.row, u.col };
-				Item item(v, tempDist);
-				pq.push(item);
+				if (tempDist < dist[v.row][v.col]) {
+					dist[v.row][v.col] = tempDist;
+					prev[v.row][v.col] = { u.row, u.col };
+					Item item(v, tempDist);
+					pq.push(item);
+				}
 			}
 		}
 		if (uRow < row - 1) { // down
 			Vertex v = corners[uRow + 1][uCol];
+			if (v.isImpossible()) {
+				v.impossible = false;
+			}
+			else {
+				int tempDist = dist[uRow][uCol] + 1;
 
-			int tempDist = dist[uRow][uCol] + 1;
-
-			if (tempDist < dist[v.row][v.col]) {
-				dist[v.row][v.col] = tempDist;
-				prev[v.row][v.col] = { u.row, u.col };
-				Item item(v, tempDist);
-				pq.push(item);
+				if (tempDist < dist[v.row][v.col]) {
+					dist[v.row][v.col] = tempDist;
+					prev[v.row][v.col] = { u.row, u.col };
+					Item item(v, tempDist);
+					pq.push(item);
+				}
 			}
 		}
 		if (uCol > 0) { // left
 			Vertex v = corners[uRow][uCol - 1];
+			if (v.isImpossible()) {
+				v.impossible = false;
+			}
+			else {
+				int tempDist = dist[uRow][uCol] + 1;
 
-			int tempDist = dist[uRow][uCol] + 1;
-
-			if (tempDist < dist[v.row][v.col]) {
-				dist[v.row][v.col] = tempDist;
-				prev[v.row][v.col] = { u.row, u.col };
-				Item item(v, tempDist);
-				pq.push(item);
+				if (tempDist < dist[v.row][v.col]) {
+					dist[v.row][v.col] = tempDist;
+					prev[v.row][v.col] = { u.row, u.col };
+					Item item(v, tempDist);
+					pq.push(item);
+				}
 			}
 		}
 		if (uCol < col - 1) { // right
 			Vertex v = corners[uRow][uCol + 1];
+			if (v.isImpossible()) {
+				v.impossible = false;
+			}
+			else {
+				int tempDist = dist[uRow][uCol] + 1;
 
-			int tempDist = dist[uRow][uCol] + 1;
-
-			if (tempDist < dist[v.row][v.col]) {
-				dist[v.row][v.col] = tempDist;
-				prev[v.row][v.col] = { u.row, u.col };
-				Item item(v, tempDist);
-				pq.push(item);
+				if (tempDist < dist[v.row][v.col]) {
+					dist[v.row][v.col] = tempDist;
+					prev[v.row][v.col] = { u.row, u.col };
+					Item item(v, tempDist);
+					pq.push(item);
+				}
 			}
 		}
 	}
@@ -306,7 +335,7 @@ Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2) // Dijkstra �
 	6  insert u at the beginning of S             // Push the source onto the stack
 	*/
 	std::vector<Cdt> S;
-	Cdt u = ftgt;
+	Cdt u = finalTarget;
 	while (prev[u.row][u.col].row != -1 && prev[u.row][u.col].col != -1) {
 		S.push_back(u);
 		u = { prev[u.row][u.col].row, prev[u.row][u.col].col };
@@ -321,5 +350,5 @@ Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt tgt1, Cdt tgt2) // Dijkstra �
 	}
 	std::cout << "\n\n\n";
 
-	return ftgt;
+	return nextSource;
 }
