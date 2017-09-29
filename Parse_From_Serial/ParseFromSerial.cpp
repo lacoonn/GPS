@@ -12,23 +12,31 @@
 #define GPXNAME "5E_outside"
 #define PORTNUM L"COM8"
 
-class Point
+class GpsData
 {
 public:
+	Ublox::_datetime datetime;
 	float latitude; // 위도
 	float longitude; // 경도
-	Point *destination;
+	int satelliteInUse;
+	
 
-	Point()
+	GpsData()
 	{
 		latitude = 0;
 		longitude = 0;
-		destination = NULL;
+		satelliteInUse = 0;
 	}
 
 	void setLocation(float lat, float lon) {
 		latitude = lat;
 		longitude = lon;
+	}
+	void setData(Ublox::_datetime datetime_, float latitude_, float longitude_, int satelliteInUse_) {
+		datetime = datetime_;
+		latitude = latitude_; // 위도
+		longitude = longitude_; // 경도
+		satelliteInUse = satelliteInUse_;
 	}
 };
 
@@ -39,7 +47,7 @@ using namespace std;
 string gpxname = GPXNAME; // gpx 파일 xml <name>
 ofstream fs_out;
 int gcnt;
-Point pointList[1000];
+GpsData dataList[1000];
 
 int main()
 {
@@ -73,31 +81,13 @@ int main()
 	timeouts.WriteTotalTimeoutConstant = 50; // in milliseconds
 	timeouts.WriteTotalTimeoutMultiplier = 10; // in milliseconds
 
-											   /*
-											   //
-											   //Writing Data to Serial Port
-											   //
-											   char lpBuffer[] = "A";
-											   DWORD dNoOFBytestoWrite;         // No of bytes to write into the port
-											   DWORD dNoOfBytesWritten = 0;     // No of bytes written to the port
-											   dNoOFBytestoWrite = sizeof(lpBuffer);
-
-											   Status = WriteFile(hComm,        // Handle to the Serial port
-											   lpBuffer,     // Data to be written to the port
-											   dNoOFBytestoWrite,  //No of bytes to write
-											   &dNoOfBytesWritten, //Bytes written
-											   NULL);
-											   */
-
-											   //
-											   // Reading from the Serial Port
-											   //
+											   
 	DWORD NoBytesRead;
 	int i = 0;
 	
 
 	bool check_tmp = false;
-	for (;;) {
+	while (true) {
 		char line[256];
 		char data;
 		Ublox gps;
@@ -105,10 +95,8 @@ int main()
 		line[0] = 1;
 
 		//file_in.getline(line, sizeof(line));
-		
 
-
-		while (1) {
+		while (true) {
 			ReadFile(hComm,           //Handle of the Serial port
 				&data,       //Temporary character
 				sizeof(data),//Size of TempChar
@@ -116,13 +104,12 @@ int main()
 				NULL);
 
 			if (NoBytesRead > 0)
-				gps.encode(data);
+				gps.encode(data); // 한 라인을 입력받으면 gps 변수 값이 없데이트된다.
 
-			if (data == '\n') {
+			if (data == '\n') // 한 라인을 입력받으면 라인버퍼를 초기화한다.
 				break;
-			}
 		}
-		if (gcnt == ITR)
+		if (gcnt == ITR) // 원하는 반복 횟수가 되면 프로그램 종료
 			break;
 		
 	}
@@ -249,7 +236,7 @@ void Ublox::read_gga()
 		case 1: //time
 		{
 			float time = atof(token);
-			int hms = int(time);
+			int hms = int (time);
 
 			datetime.millis = time - hms;
 			datetime.seconds = fmod(hms, 100);
@@ -316,12 +303,8 @@ void Ublox::read_gga()
 		}
 		counter++;
 	}
-	//cout << latitude << " " << longitude << endl;
-	printf("%3d : %f %f\n", gcnt, latitude, longitude);
-	//fs_out.precision(12);
-	//fs_out << latitude << " " << longitude << endl;
-	
-	pointList[gcnt].setLocation(latitude, longitude);
+	printf("%3d : %d:%d:%d, %f, %f, %d\n", gcnt, (int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds, latitude, longitude, (int)sats_in_use);
+	dataList[gcnt].setData(datetime, latitude, longitude, (int)sats_in_use);
 	gcnt++;
 }
 
@@ -364,12 +347,14 @@ void GPS2GPX()
 	fs_out << "  <trk>" << endl;
 	fs_out << "    <name>" << gpxname.c_str() << "</name>" << endl;
 	fs_out << "    <desc>2016. 5. 11.  7:00 am</desc>" << endl;
+	//(int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds;
+	
 	fs_out << "    <trkseg>" << endl;
 
 
 	for(int i = 0; i < ITR; i++) {
 		fs_out.precision(9);
-		fs_out << "      <trkpt lat=\"" << pointList[i].latitude << "\" lon=\"" << pointList[i].longitude << "\">" << endl;
+		fs_out << "      <trkpt lat=\"" << dataList[i].latitude << "\" lon=\"" << dataList[i].longitude << "\">" << endl;
 		fs_out << "        <ele></ele>" << endl;
 		fs_out << "        <time></time>" << endl;
 		fs_out << "      </trkpt>" << endl;
@@ -379,3 +364,20 @@ void GPS2GPX()
 	fs_out << "  </trk>" << endl;
 	fs_out << "</gpx>" << endl;
 }
+
+
+/*
+//
+//Writing Data to Serial Port
+//
+char lpBuffer[] = "A";
+DWORD dNoOFBytestoWrite;         // No of bytes to write into the port
+DWORD dNoOfBytesWritten = 0;     // No of bytes written to the port
+dNoOFBytestoWrite = sizeof(lpBuffer);
+
+Status = WriteFile(hComm,        // Handle to the Serial port
+lpBuffer,     // Data to be written to the port
+dNoOFBytestoWrite,  //No of bytes to write
+&dNoOfBytesWritten, //Bytes written
+NULL);
+*/

@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetSerial", "GetSerial\GetSerial.vcxproj", "{E393B5C7-45E4-4D91-8593-1E54F4982B9A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{F6A8F2B2-B07A-4179-922B-403A624CE930}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ublox_parser", "Ublox_parser\Ublox_parser.vcxproj", "{CBE68D8E-232B-4D5C-9FDF-356313B5497A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Parse_From_Serial", "Parse_From_Serial\Parse_From_Serial.vcxproj", "{3179605F-399C-4253-971F-EA0EA2C25B5E}"
@@ -29,14 +27,6 @@ Global
 		{E393B5C7-45E4-4D91-8593-1E54F4982B9A}.Release|Win32.ActiveCfg = Release|Win32
 		{E393B5C7-45E4-4D91-8593-1E54F4982B9A}.Release|Win32.Build.0 = Release|Win32
 		{E393B5C7-45E4-4D91-8593-1E54F4982B9A}.Release|x64.ActiveCfg = Release|Win32
-		{F6A8F2B2-B07A-4179-922B-403A624CE930}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F6A8F2B2-B07A-4179-922B-403A624CE930}.Debug|Win32.Build.0 = Debug|Win32
-		{F6A8F2B2-B07A-4179-922B-403A624CE930}.Debug|x64.ActiveCfg = Debug|x64
-		{F6A8F2B2-B07A-4179-922B-403A624CE930}.Debug|x64.Build.0 = Debug|x64
-		{F6A8F2B2-B07A-4179-922B-403A624CE930}.Release|Win32.ActiveCfg = Release|Win32
-		{F6A8F2B2-B07A-4179-922B-403A624CE930}.Release|Win32.Build.0 = Release|Win32
-		{F6A8F2B2-B07A-4179-922B-403A624CE930}.Release|x64.ActiveCfg = Release|x64
-		{F6A8F2B2-B07A-4179-922B-403A624CE930}.Release|x64.Build.0 = Release|x64
 		{CBE68D8E-232B-4D5C-9FDF-356313B5497A}.Debug|Win32.ActiveCfg = Debug|Win32
 		{CBE68D8E-232B-4D5C-9FDF-356313B5497A}.Debug|Win32.Build.0 = Debug|Win32
 		{CBE68D8E-232B-4D5C-9FDF-356313B5497A}.Debug|x64.ActiveCfg = Debug|x64

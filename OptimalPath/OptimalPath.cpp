@@ -62,7 +62,7 @@ int row, col;
 
 void initMap();
 Vertex *getNearestPointFromDesList(Cdt source, std::vector<Vertex *> &desList);
-void getNearestTwoPoint(Vertex point, Cdt &target1, Cdt &target2);
+void getNearestTwoPoint(Vertex &point, Cdt &target1, Cdt &target2);
 double getDistance(Vertex point1, Vertex point2);
 Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt target1, Cdt target2);
 double deg2rad(double deg);
@@ -95,8 +95,8 @@ int main()
 		corners[target1.row][target1.col].destination = destination; // target corner들의 destination변수에 destination vertex의 주소를 링크한다.
 		corners[target2.row][target2.col].destination = destination;
 		
-		std::cout << "target1 : " << target1.row << " " << target1.col << std::endl;
-		std::cout << "target2 : " << target2.row << " " << target2.col << std::endl;
+		//std::cout << "target1 : " << target1.row << " " << target1.col << std::endl;
+		//std::cout << "target2 : " << target2.row << " " << target2.col << std::endl;
 		Cdt tempSrc = ShortestPath(corners, src, target1, target2); // 각 지점 간의 최단경로를 구한다.
 
 		src = tempSrc; // 출발점을 업데이트한다.
@@ -165,7 +165,7 @@ Vertex *getNearestPointFromDesList(Cdt source, std::vector<Vertex *> &desList) /
 	}*/
 }
 
-void getNearestTwoPoint(Vertex point, Cdt &target1, Cdt &target2) // 한 점이 주어지면 그래프에서 가장 그 점에 가까운 두 개의 vertex를 반환한다
+void getNearestTwoPoint(Vertex &point, Cdt &target1, Cdt &target2) // 주차지점이 주어지면 거기서 가장 가까운 두 개의 코너를 반환한다
 {
 	std::priority_queue<Item, std::vector<Item>, std::greater<Item>> tempPQ; // Item의 second가 작은 순으로 정렬하는 pq
 	double minDis = -1.0;
@@ -178,12 +178,16 @@ void getNearestTwoPoint(Vertex point, Cdt &target1, Cdt &target2) // 한 점이 
 		}
 	}
 	Vertex tempVer; // second가 작은 순으로 두 점을 얻는다.
+	// 가장 가까운 코너
 	tempVer = tempPQ.top().first;
 	tempPQ.pop();
+	corners[tempVer.row][tempVer.col].destination = &point; // 코너 노드의 destination에 주차지점을 링크
 	target1 = { tempVer.row, tempVer.col };
+	// 가장 먼 코너
 	tempVer = tempPQ.top().first;
 	tempPQ.pop();
 	target2 = { tempVer.row, tempVer.col };
+	corners[tempVer.row][tempVer.col].destination = &point; // 코너 노드의 destination에 주차지점을 링크
 }
 
 double getDistance(Vertex point1, Vertex point2)
@@ -346,9 +350,11 @@ Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt target1, Cdt target2) // Dijks
 	while (!S.empty()) {
 		Cdt temp = S.back();
 		S.pop_back();
-		std::cout << temp.row << " " << temp.col << std::endl;
+		printf("%d %d // %f, %f\n", temp.row, temp.col, corners[temp.row][temp.col].latitude, corners[temp.row][temp.col].longitude);
+		if (temp.row == finalTarget.row && temp.col == finalTarget.col) {
+			printf("parking : [%f, %f]\n", corners[temp.row][temp.col].destination->latitude, corners[temp.row][temp.col].destination->longitude);
+		}
 	}
-	std::cout << "\n\n\n";
 
 	return nextSource;
 }
