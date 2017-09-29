@@ -7,8 +7,9 @@
 #include <Windows.h>
 #include <iostream>
 #include <fstream>
+#include <csignal>
+#include <vector>
 
-#define ITR 30
 #define GPXNAME "5E_outside"
 #define PORTNUM L"COM8"
 
@@ -28,10 +29,13 @@ public:
 		satelliteInUse = 0;
 	}
 
-	void setLocation(float lat, float lon) {
-		latitude = lat;
-		longitude = lon;
+	GpsData(Ublox::_datetime datetime_, float latitude_, float longitude_, int satelliteInUse_) {
+		datetime = datetime_;
+		latitude = latitude_; // 위도
+		longitude = longitude_; // 경도
+		satelliteInUse = satelliteInUse_;
 	}
+
 	void setData(Ublox::_datetime datetime_, float latitude_, float longitude_, int satelliteInUse_) {
 		datetime = datetime_;
 		latitude = latitude_; // 위도
@@ -40,53 +44,29 @@ public:
 	}
 };
 
+
 void GPS2GPX();
+void handler(int signal);
+bool openSerialPort();
 
 using namespace std;
 
-string gpxname = GPXNAME; // gpx 파일 xml <name>
+
 ofstream fs_out;
-int gcnt;
-GpsData dataList[1000];
+HANDLE hComm;
+vector<GpsData> dataList;
 
 int main()
 {
-	HANDLE hComm;
-	wchar_t str[1000] = PORTNUM;
-	
 	fs_out.open("gps_log.gpx");
 
-	hComm = CreateFile(str, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-	if (hComm == INVALID_HANDLE_VALUE)
-		printf("Error in opening serial port\n");
-	else
-		printf("opening serial port successful\n");
-
-	DCB dcbSerialParams = { 0 }; // Initializing DCB structure
-	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
-
-	bool Status = GetCommState(hComm, &dcbSerialParams);
-
-	dcbSerialParams.BaudRate = CBR_9600;  // Setting BaudRate = 9600
-	dcbSerialParams.ByteSize = 8;         // Setting ByteSize = 8
-	dcbSerialParams.StopBits = ONESTOPBIT;// Setting StopBits = 1
-	dcbSerialParams.Parity = NOPARITY;  // Setting Parity = None
-
-	SetCommState(hComm, &dcbSerialParams);
-
-	COMMTIMEOUTS timeouts = { 0 };
-	timeouts.ReadIntervalTimeout = 50; // in milliseconds
-	timeouts.ReadTotalTimeoutConstant = 50; // in milliseconds
-	timeouts.ReadTotalTimeoutMultiplier = 10; // in milliseconds
-	timeouts.WriteTotalTimeoutConstant = 50; // in milliseconds
-	timeouts.WriteTotalTimeoutMultiplier = 10; // in milliseconds
-
-											   
-	DWORD NoBytesRead;
-	int i = 0;
+	openSerialPort();						   
 	
+	signal(SIGINT, handler);
 
+	DWORD NoBytesRead;
 	bool check_tmp = false;
+
 	while (true) {
 		char line[256];
 		char data;
@@ -107,11 +87,21 @@ int main()
 				gps.encode(data); // 한 라인을 입력받으면 gps 변수 값이 없데이트된다.
 
 			if (data == '\n') // 한 라인을 입력받으면 라인버퍼를 초기화한다.
+			{
+				if (gps.lastMessage == gps.GGA) {
+					Ublox::_datetime datetime = gps.datetime;
+					float latitude = gps.latitude;
+					float longitude = gps.longitude;
+					int satelliteInUse = (int)gps.sats_in_use;
+
+					printf("%d:%d:%d, %f, %f, %d\n", (int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds, latitude, longitude, satelliteInUse);
+
+					GpsData tempData(datetime, latitude, longitude, satelliteInUse);
+					dataList.push_back(tempData);
+				}
 				break;
+			}
 		}
-		if (gcnt == ITR) // 원하는 반복 횟수가 되면 프로그램 종료
-			break;
-		
 	}
 
 	GPS2GPX();
@@ -122,226 +112,60 @@ int main()
 	return 0;
 }
 
-Ublox::Tokeniser::Tokeniser(char* _str, char _token)
+bool openSerialPort()
 {
-	str = _str;
-	token = _token;
-}
+	wchar_t str[1000] = PORTNUM;
 
+	hComm = CreateFile(str, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
-bool Ublox::Tokeniser::next(char* out, int len)
-{
-	uint8_t count = 0;
+	if (hComm == INVALID_HANDLE_VALUE) {
+		printf("Error in opening serial port\n");
 
-	if (str[0] == 0)
 		return false;
-
-	while (true)
-	{
-		if (str[count] == '\0')
-		{
-			out[count] = '\0';
-			str = &str[count];
-			return true;
-		}
-
-		if (str[count] == token)
-		{
-			out[count] = '\0';
-			count++;
-			str = &str[count];
-			return true;
-		}
-
-		if (count < len)
-			out[count] = str[count];
-
-		count++;
 	}
-	return false;
-}
+	else {
+		printf("opening serial port successful\n");
 
 
-bool Ublox::encode(char c)
-{
-	buf[pos] = c;
-	pos++;
+		DCB dcbSerialParams = { 0 }; // Initializing DCB structure
+		dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
 
-	if (c == '\n') //linefeed
-	{
-		//cout << buf << endl;
-		bool ret = process_buf();
-		memset(buf, '\0', 120);
-		pos = 0;
-		return ret;
-	}
+		bool Status = GetCommState(hComm, &dcbSerialParams);
 
-	if (pos >= 120) //avoid a buffer overrun
-	{
-		memset(buf, '\0', 120);
-		pos = 0;
-	}
-	return false;
-}
+		dcbSerialParams.BaudRate = CBR_9600;  // Setting BaudRate = 9600
+		dcbSerialParams.ByteSize = 8;         // Setting ByteSize = 8
+		dcbSerialParams.StopBits = ONESTOPBIT;// Setting StopBits = 1
+		dcbSerialParams.Parity = NOPARITY;  // Setting Parity = None
 
+		SetCommState(hComm, &dcbSerialParams);
 
-bool Ublox::process_buf()
-{
-	/*
-	if (!check_checksum()) //if checksum is bad
-	{
-	return false; //return
-	}
-	*/
-
-	//otherwise, what sort of message is it
-	if (strncmp(buf, "$GNGGA", 6) == 0)
-
-	{
-		read_gga();
-	}
-	if (strncmp(buf, "$GNGSA", 6) == 0)
-	{
-		//read_gsa();
-	}
-
-	if (strncmp(buf, "$GPGSV", 6) == 0)
-	{
-		//read_gsv();
-	}
-
-	if (strncmp(buf, "$GNRMC", 6) == 0)
-
-	{
-		//read_rmc();
-	}
-	if (strncmp(buf, "$GNVTG", 6) == 0)
-	{
-		//read_vtg();
-	}
-	return true;
-}
-
-// GNGGA 
-void Ublox::read_gga()
-{
-	int counter = 0;
-	char token[20];
-	Tokeniser tok(buf, ',');
-
-	while (tok.next(token, 20))
-	{
-		switch (counter)
-		{
-		case 1: //time
-		{
-			float time = atof(token);
-			int hms = int (time);
-
-			datetime.millis = time - hms;
-			datetime.seconds = fmod(hms, 100);
-			hms /= 100;
-			datetime.minutes = fmod(hms, 100);
-			hms /= 100;
-			datetime.hours = hms;
-
-			//time_age = millis();
-		}
-		break;
-		case 2: //latitude
-		{
-			float llat = atof(token);
-			int ilat = llat / 100;
-			double mins = fmod(llat, 100);
-			latitude = ilat + (mins / 60);
-		}
-		break;
-		case 3: //north/south
-		{
-			if (token[0] == 'S')
-				latitude = -latitude;
-		}
-		break;
-		case 4: //longitude
-		{
-			float llong = atof(token);
-			int ilat = llong / 100;
-			double mins = fmod(llong, 100);
-			longitude = ilat + (mins / 60);
-		}
-		break;
-		case 5: //east/west
-		{
-			if (token[0] == 'W')
-				longitude = -longitude;
-			//latlng_age = millis();
-		}
-		break;
-		case 6:
-		{
-			fixtype = _fixtype(atoi(token));
-		}
-		break;
-		case 7:
-		{
-			sats_in_use = atoi(token);
-		}
-		break;
-		case 8:
-		{
-			hdop = atoi(token);
-		}
-		break;
-		case 9:
-		{
-			float new_alt = atof(token);
-			//vert_speed = (new_alt - altitude) / ((millis() - alt_age) / 1000.0);
-			altitude = atof(token);
-			//alt_age = millis();
-		}
-		break;
-		}
-		counter++;
-	}
-	printf("%3d : %d:%d:%d, %f, %f, %d\n", gcnt, (int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds, latitude, longitude, (int)sats_in_use);
-	dataList[gcnt].setData(datetime, latitude, longitude, (int)sats_in_use);
-	gcnt++;
-}
-
-
-bool Ublox::check_checksum()
-{
-	if (buf[strlen(buf) - 5] == '*')
-	{
-		uint16_t sum = parse_hex(buf[strlen(buf) - 4]) * 16;
-		sum += parse_hex(buf[strlen(buf) - 3]);
-
-		for (uint8_t i = 1; i < (strlen(buf) - 5); i++)
-			sum ^= buf[i];
-		if (sum != 0)
-			return false;
+		COMMTIMEOUTS timeouts = { 0 };
+		timeouts.ReadIntervalTimeout = 50; // in milliseconds
+		timeouts.ReadTotalTimeoutConstant = 50; // in milliseconds
+		timeouts.ReadTotalTimeoutMultiplier = 10; // in milliseconds
+		timeouts.WriteTotalTimeoutConstant = 50; // in milliseconds
+		timeouts.WriteTotalTimeoutMultiplier = 10; // in milliseconds
 
 		return true;
 	}
-	return false;
 }
 
-
-uint8_t Ublox::parse_hex(char c)
+void handler(int signal)
 {
-	if (c < '0')
-		return 0;
-	if (c <= '9')
-		return c - '0';
-	if (c < 'A')
-		return 0;
-	if (c <= 'F')
-		return (c - 'A') + 10;
-	return 0;
+	GPS2GPX();
+
+	// Close HANDLE Comm
+	CloseHandle(hComm);
+
+	cout << "Closed in handler" << endl;
+
+	exit(0);
 }
 
 void GPS2GPX()
 {
+	string gpxname = GPXNAME; // gpx 파일 xml <name>
+
 	fs_out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
 	fs_out << "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:xalan=\"http://xml.apache.org/xalan\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" creator=\"MotionX Live\" version=\"1.1\">" << endl;
 	fs_out << "  <trk>" << endl;
@@ -351,8 +175,8 @@ void GPS2GPX()
 	
 	fs_out << "    <trkseg>" << endl;
 
-
-	for(int i = 0; i < ITR; i++) {
+	int dataSize = dataList.size();
+	for(int i = 0; i < dataSize; i++) {
 		fs_out.precision(9);
 		fs_out << "      <trkpt lat=\"" << dataList[i].latitude << "\" lon=\"" << dataList[i].longitude << "\">" << endl;
 		fs_out << "        <ele></ele>" << endl;
