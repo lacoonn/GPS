@@ -116,7 +116,9 @@ public:
 
 
 	NEMA lastMessage;
-	float latitude, longitude, altitude, vert_speed;
+	//float latitude, longitude;
+	double latitude, longitude;
+	float altitude, vert_speed;
 	int latlng_age, alt_age;
 
 	//these units are in hundredths
@@ -144,6 +146,8 @@ public:
 	_op_mode op_mode;
 
 private:
+	char buf[120];
+	uint8_t pos;
 
 	bool check_checksum();
 
@@ -200,9 +204,6 @@ private:
 		return true;
 	}
 
-	char buf[120];
-	uint8_t pos;
-
 	// GNGGA 
 	void read_gga()
 	{
@@ -224,11 +225,11 @@ private:
 				hms /= 100;
 				datetime.minutes = fmod(hms, 100);
 				hms /= 100;
-				datetime.hours = hms; 
+				datetime.hours = hms;
 
 				datetime.hours += 9; // 한국 시간 보정
 
-				//time_age = millis();
+									 //time_age = millis();
 			}
 			break;
 			case 2: //latitude
@@ -247,9 +248,10 @@ private:
 			break;
 			case 4: //longitude
 			{
-				float llong = atof(token);
+				//float llong = atof(token);
+				double llong = (double)(atof(token));
 				int ilat = llong / 100;
-				double mins = fmod(llong, 100);
+				double mins = fmod(llong, 100.0);
 				longitude = ilat + (mins / 60);
 			}
 			break;

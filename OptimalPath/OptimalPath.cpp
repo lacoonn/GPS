@@ -23,8 +23,8 @@ class Vertex
 public:
 	int row;
 	int col;
-	float latitude; // 위도
-	float longitude; // 경도
+	double latitude; // 위도
+	double longitude; // 경도
 	Vertex *destination;
 	bool impossible;
 	
@@ -38,7 +38,7 @@ public:
 		impossible = false;
 	}
 
-	void setLocation(float lat, float lon) {
+	void setLocation(double lat, double lon) {
 		latitude = lat;
 		longitude = lon;
 	}
@@ -53,26 +53,32 @@ bool operator < (Item a, Item b) {
 	return a.second < b.second;
 }
 
-std::ifstream fin;
-Vertex corners[20][20];
-//std::priority_queue<Item, std::vector<Item>, std::greater<Item>> pq;
-
-
-int row, col;
-
+// Functions
 void initMap();
 Vertex *getNearestPointFromDesList(Cdt source, std::vector<Vertex *> &desList);
 void getNearestTwoPoint(Vertex &point, Cdt &target1, Cdt &target2);
-double getDistance(Vertex point1, Vertex point2);
 Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt target1, Cdt target2);
 double deg2rad(double deg);
 double rad2deg(double rad);
+double getDistance(Vertex point1, Vertex point2);
+double getBearing(Vertex point1, Vertex point2);
+
+
+// Global Variables
+std::ifstream fin;
+Vertex corners[20][20];
+int row, col;
 
 int main()
 {
 	fin.open("map.txt"); // 현재 목적지들에 가장 가까운 점은 (0, 5), (3, 0), (3, 5) 이다.
 	
 	initMap(); // 그래프를 초기화한다.
+
+	//방위각
+	std::cout << "bearing --> [0][0] to [3][5] : " << getBearing(corners[0][0], corners[3][5]) << std::endl;
+	std::cout << "distance --> [0][0] to [3][5] : " << getDistance(corners[0][0], corners[3][5]) << std::endl;
+	//방위각
 	
 	int desNum; // 목적지들을 입력받고 vector에 저장한다.
 	fin >> desNum;
@@ -122,7 +128,7 @@ void initMap()
 		for (int j = 0; j < col; j++) {
 			double tempLat, tempLon;
 			fin >> tempLat >> tempLon;
-			corners[i][j].setLocation((float)tempLat, (float)tempLon);
+			corners[i][j].setLocation(tempLat, tempLon);
 			corners[i][j].row = i;
 			corners[i][j].col = j;
 		}
@@ -193,10 +199,11 @@ void getNearestTwoPoint(Vertex &point, Cdt &target1, Cdt &target2) // 주차지�
 double getDistance(Vertex point1, Vertex point2)
 {
 	// 두 점(위도, 경도) 사이의 거리를 구한다
-	double lat1 = (double)point1.latitude;
-	double lon1 = (double)point1.longitude;
-	double lat2 = (double)point2.latitude;
-	double lon2 = (double)point2.longitude;
+	double lat1 = point1.latitude;
+	double lon1 = point1.longitude;
+	double lat2 = point2.latitude;
+	double lon2 = point2.longitude;
+
 	double theta = lon1 - lon2;
 	double dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
 
@@ -207,10 +214,10 @@ double getDistance(Vertex point1, Vertex point2)
 
 	// meter
 	dist = dist * 1609.344;
+
 	//centimeter
 	//dist = dist * 160934.4;
 	
-
 	return dist;
 }
 
@@ -357,4 +364,41 @@ Cdt ShortestPath(Vertex graph[][20], Cdt src, Cdt target1, Cdt target2) // Dijks
 	}
 
 	return nextSource;
+}
+
+double getBearing(Vertex point1, Vertex point2) // 방위각을 구한다! (point1에서 point2를 향하는 각도)
+{
+	double P1_latitude = point1.latitude;
+	double P1_longitude = point1.longitude;
+	double P2_latitude = point2.latitude;
+	double P2_longitude = point2.longitude;
+
+	// 현재 위치 : 위도나 경도는 지구 중심을 기반으로 하는 각도이기 때문에 라디안 각도로 변환한다.
+	double Cur_Lat_radian = P1_latitude * (3.141592 / 180);
+	double Cur_Lon_radian = P1_longitude * (3.141592 / 180);
+
+
+	// 목표 위치 : 위도나 경도는 지구 중심을 기반으로 하는 각도이기 때문에 라디안 각도로 변환한다.
+	double Dest_Lat_radian = P2_latitude * (3.141592 / 180);
+	double Dest_Lon_radian = P2_longitude * (3.141592 / 180);
+
+	// radian distance
+	double radian_distance = 0;
+	radian_distance = acos(sin(Cur_Lat_radian) * sin(Dest_Lat_radian) + cos(Cur_Lat_radian) * cos(Dest_Lat_radian) * cos(Cur_Lon_radian - Dest_Lon_radian));
+
+	// 목적지 이동 방향을 구한다.(현재 좌표에서 다음 좌표로 이동하기 위해서는 방향을 설정해야 한다. 라디안값이다.
+	double radian_bearing = acos((sin(Dest_Lat_radian) - sin(Cur_Lat_radian) * cos(radian_distance)) / (cos(Cur_Lat_radian) * sin(radian_distance)));        // acos의 인수로 주어지는 x는 360분법의 각도가 아닌 radian(호도)값이다.
+
+	double true_bearing = 0;
+	if (sin(Dest_Lon_radian - Cur_Lon_radian) < 0)
+	{
+		true_bearing = radian_bearing * (180 / 3.141592);
+		true_bearing = 360 - true_bearing;
+	}
+	else
+	{
+		true_bearing = radian_bearing * (180 / 3.141592);
+	}
+
+	return true_bearing;
 }

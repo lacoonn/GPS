@@ -1,7 +1,6 @@
-// ParseFromSerial.cpp : 콘솔 응용 프로그램에 대한 진입점을 정의합니다.
+// ParseGps.cpp : 콘솔 응용 프로그램에 대한 진입점을 정의합니다.
 //
-// Ubloxparser.cpp : 콘솔 응용 프로그램에 대한 진입점을 정의합니다.
-//
+
 #include "stdafx.h"
 #include "ublox.h"
 #include <Windows.h>
@@ -17,10 +16,10 @@ class GpsData
 {
 public:
 	Ublox::_datetime datetime;
-	float latitude; // 위도
-	float longitude; // 경도
+	double latitude; // 위도
+	double longitude; // 경도
 	int satelliteInUse;
-	
+
 
 	GpsData()
 	{
@@ -29,14 +28,14 @@ public:
 		satelliteInUse = 0;
 	}
 
-	GpsData(Ublox::_datetime datetime_, float latitude_, float longitude_, int satelliteInUse_) {
+	GpsData(Ublox::_datetime datetime_, double latitude_, double longitude_, int satelliteInUse_) {
 		datetime = datetime_;
 		latitude = latitude_; // 위도
 		longitude = longitude_; // 경도
 		satelliteInUse = satelliteInUse_;
 	}
 
-	void setData(Ublox::_datetime datetime_, float latitude_, float longitude_, int satelliteInUse_) {
+	void setData(Ublox::_datetime datetime_, double latitude_, double longitude_, int satelliteInUse_) {
 		datetime = datetime_;
 		latitude = latitude_; // 위도
 		longitude = longitude_; // 경도
@@ -60,8 +59,8 @@ int main()
 {
 	fs_out.open("gps_log.gpx");
 
-	openSerialPort();						   
-	
+	openSerialPort();
+
 	signal(SIGINT, handler);
 
 	DWORD NoBytesRead;
@@ -90,11 +89,11 @@ int main()
 			{
 				if (gps.lastMessage == gps.GGA) {
 					Ublox::_datetime datetime = gps.datetime;
-					float latitude = gps.latitude;
-					float longitude = gps.longitude;
+					double latitude = gps.latitude;
+					double longitude = gps.longitude;
 					int satelliteInUse = (int)gps.sats_in_use;
 
-					printf("%d:%d:%d, %f, %f, %d\n", (int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds, latitude, longitude, satelliteInUse);
+					printf("%d:%d:%d, %lf, %lf, %d\n", (int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds, latitude, longitude, satelliteInUse);
 
 					GpsData tempData(datetime, latitude, longitude, satelliteInUse);
 					dataList.push_back(tempData);
@@ -105,7 +104,7 @@ int main()
 	}
 
 	GPS2GPX();
-	
+
 	// Close HANDLE Comm
 	CloseHandle(hComm);
 
@@ -172,11 +171,11 @@ void GPS2GPX()
 	fs_out << "    <name>" << gpxname.c_str() << "</name>" << endl;
 	fs_out << "    <desc>2016. 5. 11.  7:00 am</desc>" << endl;
 	//(int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds;
-	
+
 	fs_out << "    <trkseg>" << endl;
 
 	int dataSize = dataList.size();
-	for(int i = 0; i < dataSize; i++) {
+	for (int i = 0; i < dataSize; i++) {
 		fs_out.precision(9);
 		fs_out << "      <trkpt lat=\"" << dataList[i].latitude << "\" lon=\"" << dataList[i].longitude << "\">" << endl;
 		fs_out << "        <ele></ele>" << endl;
