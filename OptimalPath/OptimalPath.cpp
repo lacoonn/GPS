@@ -196,31 +196,6 @@ void getNearestTwoPoint(Vertex &point, Cdt &target1, Cdt &target2) // 주차지�
 	corners[tempVer.row][tempVer.col].destination = &point; // 코너 노드의 destination에 주차지점을 링크
 }
 
-double getDistance(Vertex point1, Vertex point2)
-{
-	// 두 점(위도, 경도) 사이의 거리를 구한다
-	double lat1 = point1.latitude;
-	double lon1 = point1.longitude;
-	double lat2 = point2.latitude;
-	double lon2 = point2.longitude;
-
-	double theta = lon1 - lon2;
-	double dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
-
-
-	dist = acos(dist);
-	dist = rad2deg(dist);
-	dist = dist * 60 * 1.1515;
-
-	// meter
-	dist = dist * 1609.344;
-
-	//centimeter
-	//dist = dist * 160934.4;
-	
-	return dist;
-}
-
 // This function converts decimal degrees to radians
 double deg2rad(double deg) {
 	return (deg * PI / 180.0);
@@ -401,4 +376,29 @@ double getBearing(Vertex point1, Vertex point2) // 방위각을 구한다! (poin
 	}
 
 	return true_bearing;
+}
+
+double getDistance(Vertex point1, Vertex point2)
+{
+	// 두 점(위도, 경도) 사이의 거리를 구한다
+	double lat1 = point1.latitude;
+	double lon1 = point1.longitude;
+	double lat2 = point2.latitude;
+	double lon2 = point2.longitude;
+
+	double theta = lon1 - lon2;
+	double dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
+
+
+	dist = acos(dist);
+	dist = rad2deg(dist);
+	dist = dist * 60 * 1.1515;
+
+	// meter
+	dist = dist * 1609.344;
+
+	//centimeter
+	//dist = dist * 160934.4;
+
+	return dist;
 }

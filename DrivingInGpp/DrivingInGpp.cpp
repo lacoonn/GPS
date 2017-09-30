@@ -7,6 +7,13 @@ using namespace std;
 
 int main()
 {
+	DrivingInGpp();
+
+    return 0;
+}
+
+void DrivingInGpp()
+{
 	vector<Gps> gppPath; // 여기에 지나가야할 gps 좌표 리스트가 저장되어 있다고 가정하자
 	int gppPathSize = gppPath.size();
 
@@ -36,20 +43,19 @@ int main()
 			double distanceToDestination = getDistance(currentGps, currentDestination); // 목표지와 현재 위치의 거리를 계산
 
 
-			if (shouldRotate == false && distanceToDestination < ARRIVE_DISTANCE) // 목표 위치에 도착하면 다음 목표 위치를 얻기 위해 반복문 종료
+			if (shouldRotate == false && distanceToDestination < ARRIVE_DISTANCE) // 목표 위치에 도착(근접)
 			{
 				// 정지시킬 필요 없음
 				break;
 			}
-			if (shouldRotate == true && distanceToDestination < ROTATE_DISTANCE) // 회전해야하면 회전을 위해 미리 준비
+			if (shouldRotate == true && distanceToDestination < ROTATE_DISTANCE) // 회전을 위해 목표 위치보다 조금 덜 근접
 			{
-				// 회전하는 제어 함수
-				// 캔회전(현재방위각, 목표방위각)
+				// 회전(현재방위각 --> 목표방위각)
 				break;
 			}
 			else
 			{
-				// 직진하는 제어 함수
+				// 가던 방향으로 직진
 			}
 		}
 	}
@@ -69,13 +75,11 @@ int main()
 
 		double distanceToDestination = getDistance(currentGps, currentIndex); // 목표지와 현재 위치의 거리를 계산
 
-		if (distanceToDestination < ARRIVE_DISTANCE) // 목표 위치에 도착(근접)하면 반복문 종료
+		if (distanceToDestination < ARRIVE_DISTANCE) // 목표 위치에 도착(근접)
 		{
+			// 반복문 종료
+			// GPP 종료(멈추나?)
 			break;
 		}
 	}
-
-
-    return 0;
 }
-
