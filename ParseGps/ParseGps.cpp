@@ -2,62 +2,18 @@
 //
 
 #include "stdafx.h"
-#include "ublox.h"
-#include <Windows.h>
-#include <iostream>
-#include <fstream>
-#include <csignal>
-#include <vector>
-
-#define GPXNAME "5E_outside"
-#define PORTNUM L"COM8"
-
-class GpsData
-{
-public:
-	Ublox::_datetime datetime;
-	double latitude; // 위도
-	double longitude; // 경도
-	int satelliteInUse;
-
-
-	GpsData()
-	{
-		latitude = 0;
-		longitude = 0;
-		satelliteInUse = 0;
-	}
-
-	GpsData(Ublox::_datetime datetime_, double latitude_, double longitude_, int satelliteInUse_) {
-		datetime = datetime_;
-		latitude = latitude_; // 위도
-		longitude = longitude_; // 경도
-		satelliteInUse = satelliteInUse_;
-	}
-
-	void setData(Ublox::_datetime datetime_, double latitude_, double longitude_, int satelliteInUse_) {
-		datetime = datetime_;
-		latitude = latitude_; // 위도
-		longitude = longitude_; // 경도
-		satelliteInUse = satelliteInUse_;
-	}
-};
-
-
-void GPS2GPX();
-void handler(int signal);
-bool openSerialPort();
 
 using namespace std;
 
-
-ofstream fs_out;
+GpxFileManager gpxFileManager;
+TxtFileManager txtFileManager;
 HANDLE hComm;
-vector<GpsData> dataList;
 
 int main()
 {
-	fs_out.open("gps_log.gpx");
+	string filename = FILENAME;
+	gpxFileManager.openFileStream(filename);
+	txtFileManager.openFileStream(filename);
 
 	openSerialPort();
 
@@ -96,14 +52,13 @@ int main()
 					printf("%d:%d:%d, %lf, %lf, %d\n", (int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds, latitude, longitude, satelliteInUse);
 
 					GpsData tempData(datetime, latitude, longitude, satelliteInUse);
-					dataList.push_back(tempData);
+					gpxFileManager.writeGpsData(tempData);
+					txtFileManager.writeGpsData(tempData);
 				}
 				break;
 			}
 		}
 	}
-
-	GPS2GPX();
 
 	// Close HANDLE Comm
 	CloseHandle(hComm);
@@ -151,9 +106,9 @@ bool openSerialPort()
 
 void handler(int signal)
 {
-	GPS2GPX();
-
 	// Close HANDLE Comm
+	gpxFileManager.endFileStream();
+	txtFileManager.endFileStream();
 	CloseHandle(hComm);
 
 	cout << "Closed in handler" << endl;
@@ -161,46 +116,3 @@ void handler(int signal)
 	exit(0);
 }
 
-void GPS2GPX()
-{
-	string gpxname = GPXNAME; // gpx 파일 xml <name>
-
-	fs_out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-	fs_out << "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:xalan=\"http://xml.apache.org/xalan\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" creator=\"MotionX Live\" version=\"1.1\">" << endl;
-	fs_out << "  <trk>" << endl;
-	fs_out << "    <name>" << gpxname.c_str() << "</name>" << endl;
-	fs_out << "    <desc>2016. 5. 11.  7:00 am</desc>" << endl;
-	//(int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds;
-
-	fs_out << "    <trkseg>" << endl;
-
-	int dataSize = dataList.size();
-	for (int i = 0; i < dataSize; i++) {
-		fs_out.precision(9);
-		fs_out << "      <trkpt lat=\"" << dataList[i].latitude << "\" lon=\"" << dataList[i].longitude << "\">" << endl;
-		fs_out << "        <ele></ele>" << endl;
-		fs_out << "        <time></time>" << endl;
-		fs_out << "      </trkpt>" << endl;
-	}
-
-	fs_out << "    </trkseg>" << endl;
-	fs_out << "  </trk>" << endl;
-	fs_out << "</gpx>" << endl;
-}
-
-
-/*
-//
-//Writing Data to Serial Port
-//
-char lpBuffer[] = "A";
-DWORD dNoOFBytestoWrite;         // No of bytes to write into the port
-DWORD dNoOfBytesWritten = 0;     // No of bytes written to the port
-dNoOFBytestoWrite = sizeof(lpBuffer);
-
-Status = WriteFile(hComm,        // Handle to the Serial port
-lpBuffer,     // Data to be written to the port
-dNoOFBytestoWrite,  //No of bytes to write
-&dNoOfBytesWritten, //Bytes written
-NULL);
-*/
