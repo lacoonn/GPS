@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParseGps", "ParseGps\ParseG
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DrivingInGpp", "DrivingInGpp\DrivingInGpp.vcxproj", "{D27AEBFE-0BFB-4633-B354-02925B54B564}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetGpsImu", "GetGpsImu\GetGpsImu.vcxproj", "{D41B59F4-B696-4E46-9C26-31BAB38065C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -59,6 +61,14 @@ Global
 		{D27AEBFE-0BFB-4633-B354-02925B54B564}.Release|Win32.Build.0 = Release|Win32
 		{D27AEBFE-0BFB-4633-B354-02925B54B564}.Release|x64.ActiveCfg = Release|x64
 		{D27AEBFE-0BFB-4633-B354-02925B54B564}.Release|x64.Build.0 = Release|x64
+		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Debug|Win32.Build.0 = Debug|Win32
+		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Debug|x64.ActiveCfg = Debug|x64
+		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Debug|x64.Build.0 = Debug|x64
+		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Release|Win32.ActiveCfg = Release|Win32
+		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Release|Win32.Build.0 = Release|Win32
+		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Release|x64.ActiveCfg = Release|x64
+		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
