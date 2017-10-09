@@ -1,5 +1,5 @@
 // DrivingInGpp.cpp : 콘솔 응용 프로그램에 대한 진입점을 정의합니다.
-//
+// Global Path Planning 미션에서의 주행을 예상하여 간략하게 정리한 프로젝트입니다.
 
 #include "stdafx.h"
 

@@ -1,3 +1,5 @@
+// 시리얼 포트로부터 데이터를 읽어 출력하는 프로젝트입니다.
+
 #include <stdio.h>
 #include <Windows.h>
 

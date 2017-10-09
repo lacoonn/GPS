@@ -1,5 +1,5 @@
 // CreatingMap.cpp : 콘솔 응용 프로그램에 대한 진입점을 정의합니다.
-//
+// 테스트를 위해 Global Path Planning의 맵을 생성해보기 위한 프로젝트입니다.
 
 #include "stdafx.h"
 #include <iostream>

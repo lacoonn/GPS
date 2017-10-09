@@ -16,6 +16,12 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="imu_log.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
+    <Text Include="test_track.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -41,5 +47,10 @@
     <ClCompile Include="Serial.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test_track.gpx">
+      <Filter>리소스 파일</Filter>
+    </None>
   </ItemGroup>
 </Project>

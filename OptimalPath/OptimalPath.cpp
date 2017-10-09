@@ -1,5 +1,5 @@
 // OptimalPath.cpp : 콘솔 응용 프로그램에 대한 진입점을 정의합니다.
-//
+// Global Path Planning 미션에서 맵이 주어지면 최적의 경로를 찾는 프로젝트입니다.
 
 #include "stdafx.h"
 #include <iostream>

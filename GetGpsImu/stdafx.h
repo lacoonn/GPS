@@ -30,9 +30,7 @@ class GpsData
 public:
 	struct time
 	{
-		int hours, minutes, seconds;
-		uint16_t millis;
-		bool valid; //1 = yes, 0 = no
+		int hours, minutes, seconds, milliseconds;
 	};
 	time datetime;
 	double latitude; // 위도
@@ -129,8 +127,8 @@ public:
 	void writeGpsData(GpsData data)
 	{
 		txtFileStream << (int)data.datetime.hours << " " << (int)data.datetime.minutes << " " << (int)data.datetime.seconds << " " <<
-			data.latitude << " " << data.longitude << " " << data.fixtype << " " << data.satelliteInUse << " " <<
-			data.hdop << " " << data.altitude << std::endl;
+			data.datetime.milliseconds << " " << data.latitude << " " << data.longitude << " " << data.fixtype << " " <<
+			data.satelliteInUse << " " << data.hdop << " " << data.altitude << std::endl;
 	}
 
 	void endFileStream()
