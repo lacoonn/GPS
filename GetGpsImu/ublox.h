@@ -1,20 +1,14 @@
-#include <stdio.h>
-#include <tchar.h>
-
 /*
 Andrea Toscano
 U-BLOX NEO M8M Parser
 */
 
-
-
-
+#include <stdio.h>
+#include <tchar.h>
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-
-
 
 
 class Ublox

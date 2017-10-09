@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Serial.h"
 CSerialPort::CSerialPort()
 {

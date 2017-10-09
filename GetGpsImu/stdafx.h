@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <thread>
+#include <mutex>
 
 #include "ublox.h"
 #include "Serial.h"
@@ -137,5 +138,29 @@ public:
 		txtFileStream.close();
 	}
 };
+
+
+std::string *StringSplit(std::string strTarget, std::string strTok)
+{
+	int     nCutPos;
+	int     nIndex = 0;
+	std::string *strResult = new std::string[15];
+
+	while ((nCutPos = strTarget.find_first_of(strTok)) != strTarget.npos)
+	{
+		if (nCutPos > 0)
+		{
+			strResult[nIndex++] = strTarget.substr(0, nCutPos);
+		}
+		strTarget = strTarget.substr(nCutPos + 1);
+	}
+
+	if (strTarget.length() > 0)
+	{
+		strResult[nIndex++] = strTarget.substr(0, nCutPos);
+	}
+
+	return strResult;
+}
 
 // TODO: 프로그램에 필요한 추가 헤더는 여기에서 참조합니다.
