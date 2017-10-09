@@ -86,7 +86,6 @@ public:
 		bool valid; //1 = yes, 0 = no
 	};
 
-	enum _fixtype { FIX_TYPE_NONE, FIX_TYPE_GPS, FIX_TYPE_DIFF };
 	enum _fix { FIX_NONE = 1, FIX_2D, FIX_3D };
 	enum _op_mode { MODE_MANUAL, MODE_AUTOMATIC };
 	enum NEMA { GGA, GSA, GSV, RMC, VTG };
@@ -126,7 +125,7 @@ public:
 	uint16_t speed, course, knots;
 	int speed_age, course_age, knots_age;
 
-	_fixtype fixtype; //0 = no fix, 1 = satellite only, 2 = differential fix
+	int fixtype; //0 = no fix, 1 = satellite only, 2 = differential fix
 	int fixtype_age;
 	_fix fix;
 	int fix_age;
@@ -264,24 +263,24 @@ private:
 			break;
 			case 6:
 			{
-				fixtype = _fixtype(atoi(token));
+				fixtype = (int)atoi(token); // 0 : invalid, 1 : gps, 2 : dgps
 			}
 			break;
 			case 7:
 			{
-				sats_in_use = atoi(token);
+				sats_in_use = atoi(token); // 사용 중인 인공위성 숫자
 			}
 			break;
 			case 8:
 			{
-				hdop = atoi(token);
+				hdop = atoi(token); // horizontal dilution of Precision으로 2차원적 오차결정(수평방향)을 뜻한다.
 			}
 			break;
 			case 9:
 			{
 				float new_alt = atof(token);
 				//vert_speed = (new_alt - altitude) / ((millis() - alt_age) / 1000.0);
-				altitude = atof(token);
+				altitude = atof(token); // 해수면 기준 고도
 				//alt_age = millis();
 			}
 			break;

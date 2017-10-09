@@ -18,17 +18,26 @@
 #include <vector>
 #include <string>
 
-#define FILENAME "gps_log"
+#define FILENAME "gps_log2"
 #define GPXNAME "TEST"
 #define PORTNUM L"COM8"
 
 class GpsData
 {
 public:
-	Ublox::_datetime datetime;
+	struct time
+	{
+		int hours, minutes, seconds;
+		uint16_t millis;
+		bool valid; //1 = yes, 0 = no
+	};
+	time datetime;
 	double latitude; // 위도
 	double longitude; // 경도
+	int fixtype; // 0 = invalid, 1 = gps, 2 = dgps
 	int satelliteInUse;
+	double hdop;
+	double altitude;
 
 
 	GpsData()
@@ -38,18 +47,14 @@ public:
 		satelliteInUse = 0;
 	}
 
-	GpsData(Ublox::_datetime datetime_, double latitude_, double longitude_, int satelliteInUse_) {
+	void setData(time datetime_, double latitude_, double longitude_, int fixtype_, int satelliteInUse_, double hdop_, double altitude_) {
 		datetime = datetime_;
 		latitude = latitude_; // 위도
 		longitude = longitude_; // 경도
+		fixtype = fixtype_;
 		satelliteInUse = satelliteInUse_;
-	}
-
-	void setData(Ublox::_datetime datetime_, double latitude_, double longitude_, int satelliteInUse_) {
-		datetime = datetime_;
-		latitude = latitude_; // 위도
-		longitude = longitude_; // 경도
-		satelliteInUse = satelliteInUse_;
+		hdop = hdop_;
+		altitude = altitude_;
 	}
 };
 
@@ -121,7 +126,8 @@ public:
 	void writeGpsData(GpsData data)
 	{
 		txtFileStream << (int)data.datetime.hours << " " << (int)data.datetime.minutes << " " << (int)data.datetime.seconds << " " <<
-			data.latitude << " " << data.longitude << " " << data.satelliteInUse << std::endl;
+			data.latitude << " " << data.longitude << " " << data.fixtype << " " << data.satelliteInUse << " " <<
+			data.hdop << " " << data.altitude << std::endl;
 	}
 
 	void endFileStream()

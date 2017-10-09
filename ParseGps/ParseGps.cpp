@@ -5,9 +5,9 @@
 
 using namespace std;
 
-GpxFileManager gpxFileManager;
-TxtFileManager txtFileManager;
-HANDLE hComm;
+static GpxFileManager gpxFileManager;
+static TxtFileManager txtFileManager;
+static HANDLE hComm;
 
 int main()
 {
@@ -44,14 +44,21 @@ int main()
 			if (data == '\n') // 한 라인을 입력받으면 라인버퍼를 초기화한다.
 			{
 				if (gps.lastMessage == gps.GGA) {
-					Ublox::_datetime datetime = gps.datetime;
-					double latitude = gps.latitude;
-					double longitude = gps.longitude;
+					GpsData::time datetime;
+					datetime.hours = (int)gps.datetime.hours;
+					datetime.minutes = (int)gps.datetime.minutes;
+					datetime.seconds = (int)gps.datetime.seconds;
+					double latitude = (double)gps.latitude;
+					double longitude = (double)gps.longitude;
+					int fixtype = (int)gps.fixtype;
 					int satelliteInUse = (int)gps.sats_in_use;
+					double hdop = (double)gps.hdop;
+					double altitude = (double)gps.altitude;
 
-					printf("%d:%d:%d, %lf, %lf, %d\n", (int)datetime.hours, (int)datetime.minutes, (int)datetime.seconds, latitude, longitude, satelliteInUse);
+					printf("%d:%d:%d, %lf, %lf, %d, %d, %lf, %lf\n", datetime.hours, datetime.minutes, datetime.seconds, latitude, longitude, fixtype, satelliteInUse, hdop, altitude);
 
-					GpsData tempData(datetime, latitude, longitude, satelliteInUse);
+					GpsData tempData;
+					tempData.setData(datetime, latitude, longitude, fixtype, satelliteInUse, hdop, altitude);
 					gpxFileManager.writeGpsData(tempData);
 					txtFileManager.writeGpsData(tempData);
 				}
@@ -104,8 +111,9 @@ bool openSerialPort()
 	}
 }
 
-void handler(int signal)
+void handler(int s)
 {
+	signal(SIGINT, handler);
 	// Close HANDLE Comm
 	gpxFileManager.endFileStream();
 	txtFileManager.endFileStream();
