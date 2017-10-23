@@ -16,10 +16,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
-    <Text Include="imu_log.txt">
+    <Text Include="gps_test_track.txt">
       <Filter>리소스 파일</Filter>
     </Text>
-    <Text Include="test_track.txt">
+    <Text Include="imu_test_track.txt">
       <Filter>리소스 파일</Filter>
     </Text>
   </ItemGroup>
@@ -36,6 +36,9 @@
     <ClInclude Include="Serial.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="GetGpsImu.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -47,9 +50,12 @@
     <ClCompile Include="Serial.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ublox.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="test_track.gpx">
+    <None Include="gps_test_track.gpx">
       <Filter>리소스 파일</Filter>
     </None>
   </ItemGroup>

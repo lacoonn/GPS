@@ -1,7 +1,9 @@
 #pragma once
-#include <Windows.h>
-#include <atlstr.h>
+
+#include "stdafx.h"
+
 #define BUFFER_SIZE 128
+
 class CSerialPort
 {
 public:

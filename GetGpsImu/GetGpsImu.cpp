@@ -2,17 +2,20 @@
 // 시리얼 포트로부터 GPS와 IMU 값을 읽고 파싱하는 프로젝트입니다.
 
 #include "stdafx.h"
+#include "GetGpsImu.h"
+#include "ublox.h"
+#include "Serial.h"
 
-#define FILENAME "test_track"
+#define FILENAME "test_track4"
 #define GPSCOM L"COM8"
-#define IMUCOM L"COM5"
+#define IMUCOM L"COM4"
 
 using namespace std;
 
 ///////////////////// 전역 데이터 //////////////////////
 GpsData g_gpsData;
 
-///////////////////// 전역 데이터 //////////////////////
+///////////////////// 뮤텍스 //////////////////////
 mutex gps_mutex;
 mutex imu_mutex;
 
@@ -28,14 +31,66 @@ CSerialPort imuSerial; // IMU Serial
 ///////////////////// 스레드 종료 판단 //////////////////////////
 bool isFinish;
 
+void handler(int s);
+bool openGpsPort(wchar_t str[]);
+bool openImuPort(wchar_t str[]);
+void updateGps();
+void updateImu();
+
+int main()
+{
+	isFinish = false;
+	
+	string filename = FILENAME;
+	
+	// signal to terminate program
+	signal(SIGINT, handler);
+
+	if (!openGpsPort(GPSCOM))
+		return 1;
+	//if (!openImuPort(IMUCOM))
+		//return 1;
+
+	gpxFileManager.openFileStream(filename);
+	txtFileManager.openFileStream(filename);
+	string imufile = "imu_";
+	imufile.append(FILENAME);
+	imufile.append(".txt");
+	imuFileStream.open(imufile);
+
+	////////////////////////////// Thread Start /////////////////////////////////////
+	thread gpsThread(updateGps);
+	//thread imuThread(updateImu);
+
+	////////////////////////////// Thread Join /////////////////////////////////////
+	gpsThread.join();
+	//imuThread.join();
+
+	cout << "Exit Program" << endl;
+
+	return 0;
+}
+
+void handler(int s)
+{
+	signal(SIGINT, handler);
+
+	// End Thread
+	isFinish = true;
+
+	
+
+	cout << "Closed in handler" << endl;
+
+	CloseHandle(hComm);
+}
+
 bool openGpsPort(wchar_t str[])
 {
-	//wchar_t str[1000] = PORTNUM;
-
 	hComm = CreateFile(str, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
 	cout << "gps str : " << str << endl;
-	
+
 
 
 	if (hComm == INVALID_HANDLE_VALUE) {
@@ -46,7 +101,7 @@ bool openGpsPort(wchar_t str[])
 	}
 	else {
 		//printf("opening serial port successful\n");
-		cout << "GPS : opening serial port successful" << endl;
+		cout << "GPS : Open successful" << endl;
 
 		DCB dcbSerialParams = { 0 }; // Initializing DCB structure
 		dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
@@ -57,6 +112,7 @@ bool openGpsPort(wchar_t str[])
 		dcbSerialParams.ByteSize = 8;         // Setting ByteSize = 8
 		dcbSerialParams.StopBits = ONESTOPBIT;// Setting StopBits = 1
 		dcbSerialParams.Parity = NOPARITY;  // Setting Parity = None
+		dcbSerialParams.fParity = FALSE;
 
 		SetCommState(hComm, &dcbSerialParams);
 
@@ -83,16 +139,18 @@ bool openImuPort(wchar_t str[])
 		imuSerial.WriteByte('s');
 		imuSerial.WriteByte('p');
 		imuSerial.WriteByte('=');
-		imuSerial.WriteByte('5');
+		imuSerial.WriteByte('3');
 		imuSerial.WriteByte('0');
-		imuSerial.WriteByte('0');
+		//imuSerial.WriteByte('0');
 		//imuSerial.WriteByte('0');
 		imuSerial.WriteByte('\n');
 
 		imuSerial.WriteByte('s');
 		imuSerial.WriteByte('s');
 		imuSerial.WriteByte('=');
-		imuSerial.WriteByte('7');
+		imuSerial.WriteByte('1');
+		imuSerial.WriteByte('1');
+		//imuSerial.WriteByte('7');
 		imuSerial.WriteByte('\n');
 
 		return true;
@@ -117,10 +175,10 @@ void updateGps()
 		// 스레드가 종료되어야하는지 검사
 		if (isFinish == true)
 		{
-			CloseHandle(hComm);
+			
 			gpxFileManager.endFileStream();
 			txtFileManager.endFileStream();
-
+			cout << "updateGps thread end" << endl;
 			return;
 		}
 
@@ -132,7 +190,10 @@ void updateGps()
 			NULL);
 
 		if (NumBytesReadGps > 0)
+		{
 			gps.encode(data); // 한 라인을 입력받으면 gps 변수 값이 없데이트된다.
+							  //cout << data;
+		}
 
 
 		////////////////////// GPS EndLine /////////////////////////
@@ -169,6 +230,8 @@ void updateGps()
 
 				gpxFileManager.writeGpsData(tempGpsData);
 				txtFileManager.writeGpsData(tempGpsData);
+
+				Sleep(100); // 버퍼 밀림을 방지
 			}
 		}
 	}
@@ -176,6 +239,7 @@ void updateGps()
 
 void updateImu()
 {
+	BYTE ref;
 	char TempChar; //Temporary character used for reading
 	char SerialBuffer[256]; //Buffer for storing Rxed Data
 	DWORD NumBytesReadIMU;
@@ -188,11 +252,14 @@ void updateImu()
 		{
 			imuSerial.ClosePort();
 			imuFileStream.close();
+			cout << "updateImu thread end" << endl;
 			return;
 		}
 
 		////////////////////// IMU ReadFile /////////////////////////
-		ReadFile(imuSerial.m_hComm, &TempChar, sizeof(TempChar), &NumBytesReadIMU, NULL);
+		//ReadFile(imuSerial.m_hComm, &TempChar, sizeof(TempChar), &NumBytesReadIMU, NULL);
+		imuSerial.ReadByte(ref);
+		TempChar = (char)ref;
 		SerialBuffer[i] = TempChar;
 
 		// Write TempChar to file
@@ -208,7 +275,7 @@ void updateImu()
 				GetLocalTime(&systemTime);
 
 				SerialBuffer[i + 1] = 0;
-				printf("IMU ==> Line End!\n");
+				//printf("IMU ==> Line End!\n");
 				imuFileStream << (int)systemTime.wHour << " " << (int)systemTime.wMinute << " " << (int)systemTime.wSecond <<
 					" " << (int)systemTime.wMilliseconds << " " << SerialBuffer;
 			}
@@ -227,49 +294,4 @@ void updateImu()
 			i++;
 		}
 	}
-}
-
-
-void handler(int s)
-{
-	signal(SIGINT, handler);
-	
-	// End Thread
-	isFinish = true;
-
-	cout << "Closed in handler" << endl;
-}
-
-int main()
-{
-	isFinish = false;
-	
-	string filename = FILENAME;
-	
-	// signal to terminate program
-	signal(SIGINT, handler);
-
-	if (!openGpsPort(GPSCOM))
-		return 1;
-	if (!openImuPort(IMUCOM))
-		return 1;
-
-	gpxFileManager.openFileStream(filename);
-	txtFileManager.openFileStream(filename);
-	string imufile = "imu_";
-	imufile.append(FILENAME);
-	imufile.append(".txt");
-	imuFileStream.open(imufile);
-
-	////////////////////////////// Thread Start /////////////////////////////////////
-	thread gpsThread(&updateGps);
-	thread imuThread(&updateImu);
-
-	////////////////////////////// Thread Join /////////////////////////////////////
-	gpsThread.join();
-	imuThread.join();
-
-	cout << "Exit Program" << endl;
-
-	return 0;
 }

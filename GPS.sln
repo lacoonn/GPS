@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetSerial", "GetSerial\GetSerial.vcxproj", "{E393B5C7-45E4-4D91-8593-1E54F4982B9A}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DrivingInGpp", "DrivingInGpp\DrivingInGpp.vcxproj", "{D27AEBFE-0BFB-4633-B354-02925B54B564}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetGpsImu", "GetGpsImu\GetGpsImu.vcxproj", "{D41B59F4-B696-4E46-9C26-31BAB38065C1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetHeading", "GetHeading\GetHeading.vcxproj", "{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,14 @@ Global
 		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Release|Win32.Build.0 = Release|Win32
 		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Release|x64.ActiveCfg = Release|x64
 		{D41B59F4-B696-4E46-9C26-31BAB38065C1}.Release|x64.Build.0 = Release|x64
+		{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}.Debug|Win32.Build.0 = Debug|Win32
+		{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}.Debug|x64.ActiveCfg = Debug|x64
+		{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}.Debug|x64.Build.0 = Debug|x64
+		{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}.Release|Win32.ActiveCfg = Release|Win32
+		{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}.Release|Win32.Build.0 = Release|Win32
+		{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}.Release|x64.ActiveCfg = Release|x64
+		{DD0B5A88-81EF-40A2-893C-EE4157CACF3C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

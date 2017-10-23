@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xalan="http://xml.apache.org/xalan" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creator="MotionX Live" version="1.1">
+  <trk>
+    <name>GPS_TEST</name>
+    <desc>2016. 5. 11.  7:00 am</desc>
+    <trkseg>
+      <trkpt lat="35.6470296" lon="128.401857">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470256" lon="128.401854">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470296" lon="128.401853">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470296" lon="128.401853">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470296" lon="128.401853">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470296" lon="128.401852">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470296" lon="128.401849">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470256" lon="128.401846">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470215" lon="128.401843">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470215" lon="128.401841">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470215" lon="128.401839">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470215" lon="128.401838">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470215" lon="128.401837">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+      <trkpt lat="35.6470215" lon="128.401835">
+        <ele></ele>
+        <time></time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

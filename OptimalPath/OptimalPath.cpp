@@ -122,17 +122,82 @@ int main()
 void initMap()
 {
 	fin >> row >> col;
-	row++;
-	col++;
+	row;
+	col;
+	/* 기존 방식, 모든 노드를 다 필요한 방법
 	for (int i = 0; i < row; i++) {
-		for (int j = 0; j < col; j++) {
-			double tempLat, tempLon;
-			fin >> tempLat >> tempLon;
-			corners[i][j].setLocation(tempLat, tempLon);
+	for (int j = 0; j < col; j++) {
+	double tempLat, tempLon;
+	fin >> tempLat >> tempLon;
+	corners[i][j].setLocation(tempLat, tempLon);
+	corners[i][j].row = i;
+	corners[i][j].col = j;
+	}
+	}
+	*/
+
+	//(1,1) (1,6) (5,1) (5,6)순서로 좌표를 받아온다.
+	double lat1, lon1, lat2, lon2, lat3, lon3, lat4, lon4;
+
+	fin >> lat1 >> lon1;
+	corners[0][0].setLocation(lat1, lon1);
+
+	fin >> lat2 >> lon2;
+	corners[0][col].setLocation(lat2, lon2);
+
+	fin >> lat3 >> lon3;
+	corners[row][0].setLocation(lat3, lon3);
+
+	fin >> lat4 >> lon4;
+	corners[row][col].setLocation(lat4, lon4);
+
+	double gap_lat1, gap_lon1, gap_lat2, gap_lon2;
+	gap_lat1 = (lat3 - lat1);
+	gap_lat2 = (lat4 - lat2);
+	gap_lon1 = (lon2 - lon1);
+	gap_lon2 = (lon4 - lon3);
+
+	double lat, lon, gap_lat, gap_lon;
+
+	for (int i = 0; i <= row; i++) {
+		for (int j = 0; j <= col; j++) {
 			corners[i][j].row = i;
 			corners[i][j].col = j;
+
+			if (i == 0 && j == 0)
+			{
+				lat = lat1;
+				lon = lon1;
+			}
+			else if (i == 0 && j == col)
+			{
+				lat = lat2;
+				lon = lon2;
+			}
+			else if (i == row && j == 0)
+			{
+				lat = lat3;
+				lon = lon3;
+			}
+			else if (i == row && j == col)
+			{
+				lat = lat4;
+				lon = lon4;
+			}
+			else {
+				gap_lat = (((col - j) / (double)col) * gap_lat1 + (j / (double)col) * gap_lat2) / row;
+				gap_lon = (((row - i) / (double)row) * gap_lon1 + (i / (double)row) * gap_lon2) / col;
+				lat = gap_lat * (i)+lat1;
+				lon = gap_lon * (j)+lon1;
+				corners[i][j].setLocation(lat, lon);
+
+			}
+
+			std::cout.precision(15);
+			std::cout << std::fixed << lat << " " << lon << std::endl;
 		}
 	}
+
 }
 
 Vertex *getNearestPointFromDesList(Cdt source, std::vector<Vertex *> &desList) // 한 점이 주어지면 desList에서 그 점에 가장 가까운 목적지를 구한다.
